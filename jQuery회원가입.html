@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script>
+        function sample6_execDaumPostcode() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+    
+                    // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                    // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                    var addr = ''; // 주소 변수
+                    var extraAddr = ''; // 참고항목 변수
+    
+                    //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                    if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+                        addr = data.roadAddress;
+                    } else { // 사용자가 지번 주소를 선택했을 경우(J)
+                        addr = data.jibunAddress;
+                    }
+    
+                    // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+                    if(data.userSelectedType === 'R'){
+                        // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                        // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                        if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                            extraAddr += data.bname;
+                        }
+                        // 건물명이 있고, 공동주택일 경우 추가한다.
+                        if(data.buildingName !== '' && data.apartment === 'Y'){
+                            extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                        }
+                        // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                        if(extraAddr !== ''){
+                            extraAddr = ' (' + extraAddr + ')';
+                        }
+                        // 조합된 참고항목을 해당 필드에 넣는다.
+                        document.getElementById("sample6_extraAddress").value = extraAddr;
+                    
+                    } else {
+                        document.getElementById("sample6_extraAddress").value = '';
+                    }
+    
+                    // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                    document.getElementById('sample6_postcode').value = data.zonecode;
+                    document.getElementById("sample6_address").value = addr;
+                    // 커서를 상세주소 필드로 이동한다.
+                    document.getElementById("sample6_detailAddress").focus();
+                }
+            }).open();
+        } 
+        </script>
+    <script>
+        function sendit(){
+            // 정규식
+            const expNameText = RegExp(/[가-힣]+$/);
+            const expPwText = RegExp(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*\W)/);
+            const expHpText = RegExp(/^(010)(\d{3,4})(\d{4})$/);
+            const expEmailText = RegExp(/^[A-Za-z0-9\.\-]+@[A-Za-z0-9\.\-]+\.[A-Za-z0-9]+$/);
+
+            // 아이디를 입력하지 않은 경우
+            if($("#userid").val() == ''){
+                alert('아이디를 입력하세요');
+                $("#userid").focus();
+                return false;
+            }
+
+            // 아이디가 4자 미만 또는 16자를 초과하는 경우
+            if($("#userid").val().length < 4 || $("#userid").val().length > 16){
+                alert('아이디를 4자이상 16자 이하로 입력하세요');
+                $("#userid").focus();
+                return false;
+            }
+
+            // 비밀번호를 입력하지 않은 경우
+            if($("#userpw").val() == ''){
+                alert('비밀번호를 입력하세요');
+                $("#userpw").focus();
+                return false;
+            }
+
+            // 비밀번호와 비밀번호 확인의 같이 다른 경우
+            if($("#userpw").val() != $("#userpw_re").val()){
+                alert('비밀번호와 비밀번호 확인의 값이 다릅니다');
+                $("#userpw_re").focus();
+                return false;
+            }
+
+            // 비밀번호에 숫자, 대소문자, 특수문자가 포함되지 않았을 경우
+            if(!expPwText.test($("#userpw").val())){
+                alert('비밀번호는 숫자, 대소문자, 특수문자가 포함되어야합니다');
+                $("#userpw").focus();
+                return false;
+            }
+
+            // 이름이 한글이 아닌 경우
+            if(!expNameText.test($("#name").val())){
+                alert('이름 형식을 확인하세요\n한글만 입력 가능합니다');
+                $("#name").focus();
+                return false;
+            }
+
+           
+            // 핸드폰번호가 형식에 맞지 않은 경우
+            if(!expHpText.test($("#hp").val())){
+                alert('휴대폰번호 형식을 확인하세요\n(-)을 제외한 휴대폰번호를 입력하세요\n휴대폰번호는 010으로 시작해야합니다.');
+                $("#hp").focus();
+                return false;
+            }   
+
+            // 이메일 형식이 맞지 않은 경우
+            if(!expEmailText.test($("#email").val())){
+                alert('이메일 형식을 확인하세요');
+                $("#email").focus();
+                return false;
+            }
+
+            // 취미가 1개 미만으로 체크 되었을 경우
+            if($("input:checkbox[name=hobby]:checked").length < 1){
+                alert('취미는 1개 이상 고르세요');
+                $("#hobby").focus();
+                return false;
+            }
+            
+            // 주민등록번호가 입력되지 않은 경우
+            if(($("#ssn1").val() == "") || ($("#ssn2").val() == "")){  
+                alert("주민등록번호를 입력해주세요"); 
+                $("#ssn1").focus(); 
+                return false; 
+            }
+            return true;
+                        
+        }
+        
+        // 주민등록번호 체크하기
+        function ssnCheck(){
+            const ssn1 = document.getElementById("ssn1");
+            const ssn2 = document.getElementById("ssn2");
+            const isssn = document.getElementById("isssn");
+
+            if( $("#ssn1").val() == '' || $("#ssn1").val() == '') {
+                alert('주민등록번호를 입력하세요');
+                $("#ssn1").focus();
+                return false;
+            }
+
+            const ssn = $("#ssn1").val() + $("#ssn2").val();    // 0010113068518
+
+            const s1 = Number(ssn.substr(0, 1)) * 2;
+            const s2 = Number(ssn.substr(1, 1)) * 3;
+            const s3 = Number(ssn.substr(2, 1)) * 4;
+            const s4 = Number(ssn.substr(3, 1)) * 5;
+            const s5 = Number(ssn.substr(4, 1)) * 6;
+            const s6 = Number(ssn.substr(5, 1)) * 7;
+            const s7 = Number(ssn.substr(6, 1)) * 8;
+            const s8 = Number(ssn.substr(7, 1)) * 9;
+            const s9 = Number(ssn.substr(8, 1)) * 2;
+            const s10 = Number(ssn.substr(9, 1)) * 3;
+            const s11 = Number(ssn.substr(10, 1)) * 4;
+            const s12 = Number(ssn.substr(11, 1)) * 5;
+            const s13 = Number(ssn.substr(12, 1));
+            
+            let result = s1+s2+s3+s4+s5+s6+s7+s8+s9+s10+s11+s12;
+            result = result % 11;
+            result = 11- result;
+            if(result >= 10) result = result % 10;
+
+            if(result == s13){
+                alert('유효한 주민등록번호입니다');
+                $("#isssn").val() = "y";
+            }else{
+                alert('유효하지 않은 주민등록번호입니다');
+            }
+        }
+    
+        function moveFocus(){
+            const ssn1 = document.getElementById("ssn1");
+            if($("ssn1").val().length >= 6){
+                document.getElementById("ssn2").focus();
+            }
+        }
+
+        function changeSsn(){
+            const isssn = document.getElementById("isssn");
+            $("#isssn").val() = "n";
+        }
+
+    </script>
+
+</head>
+<body>
+    <h2>💜 회원가입 💜</h2>
+    <form action="regist_ok.jsp" name="regform" id="regform" method="post" onsubmit="return sendit()">
+        <input type="hidden" name="isssn" id="isssn" value="n">
+        <p><label>아이디 : <input type="text" name="userid" id="userid" maxlength="20"></label></p>
+        <p><label>비밀번호 : <input type="password" name="userpw" id="userpw" maxlength="20"></label></p>
+        <p><label>비밀번호 확인 : <input type="password" name="userpw_re" id="userpw_re" maxlength="20"></label></p>
+        <p><label>이름 : <input type="text" name="name" id="name"></label></p>
+        <p><label>휴대폰 번호 : <input type="text" name="hp" id="hp"></label></p>
+        <!-- <p><input type="button" value="가입완료" onclick="sendit()"> <input type="reset" value="다시작성"></p> -->
+        <p><label>이메일 : <input type="text" name="email" id="email"></label></p>
+        <p>취미 : <label>드라이브<input type="checkbox" name="hobby" value="드라이브"></label> <label>영화감상<input type="checkbox" name="hobby" value="영화감상"></label> <label>쇼핑<input type="checkbox" name="hobby" value="쇼핑"></label> <label>요가<input type="checkbox" name="hobby" value="요가"></label> <label>헬스<input type="checkbox" name="hobby" value="헬스"></label></p>
+        <p>주민등록번호 : <input type="text" name="ssn1" id="ssn1" maxlength="6" onkeyup="moveFocus()" onkeydown="changeSsn()"> - <input type="password" name="ssn2" id="ssn2" onkeydown="changeSsn()"> <input type="button" id="checkbut" value="주민등록번호 검증" onclick="ssnCheck()"></p>
+        <p><label>우편번호 : <input type="text" name="zipcode" id="sample6_postcode" readonly></label> <input type="button" value="우편번호 검색" onclick="sample6_execDaumPostcode()"></p>
+        <p><label>주소 : <input type="text" name="address1" id="sample6_address"></label></p>
+        <p><label>상세주소 : <input type="text" name="address2" id="sample6_detailAddress"></label></p>
+        <p><label>참고항목 : <input type="text" name="address3" id="sample6_extraAddress"></label></p>
+        <p><input type="submit" id="registbut" value="가입완료"> <input type="reset" value="다시작성"></p>
+    </form>
+</body>
+</html>
